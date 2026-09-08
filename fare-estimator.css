@@ -1,0 +1,11 @@
+.fare-preview{margin-top:18px;border-radius:10px;background:#edf3e4;border:1px solid #dbe5ce;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.fare-preview-copy{min-width:0}
+.fare-preview-kicker{font-size:9px;font-weight:700;letter-spacing:1.4px;color:#6d805e;margin-bottom:5px}
+.fare-preview-title{font:650 14px Manrope,sans-serif;color:var(--green)}
+.fare-preview-detail{font-size:10px;color:#74816e;margin-top:4px;line-height:1.5}
+.fare-preview-price{font:750 27px Manrope,sans-serif;color:var(--green);white-space:nowrap;letter-spacing:-1px}
+.fare-preview.loading .fare-preview-price{font-size:12px;letter-spacing:0;color:#6f7c69}
+.fare-preview.error{background:#faf6e9;border-color:#ebe1be}
+.fare-breakdown{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.fare-chip{display:inline-block;padding:4px 7px;border-radius:20px;background:#fff9;font-size:9px;color:#5f7057}
+@media(max-width:650px){.fare-preview{align-items:flex-start}.fare-preview-price{font-size:24px}}
