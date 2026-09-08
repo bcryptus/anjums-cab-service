@@ -1,0 +1,12 @@
+.address-input{position:relative}
+.address-panel{position:absolute;top:calc(100% + 7px);left:-1px;right:-1px;min-width:260px;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 12px 30px #193c3224;z-index:20;overflow:hidden}
+.address-panel[hidden]{display:none}
+.address-panel [role=listbox]{max-height:275px;overflow-y:auto;overscroll-behavior:contain}
+.address-option{padding:12px 14px;cursor:pointer;border-bottom:1px solid #f0f2ed;line-height:1.5}
+.address-option:hover,.address-option[aria-selected=true]{background:#edf3e4}
+.address-option strong{display:block;font-size:12px;font-weight:600;color:var(--green);overflow-wrap:anywhere}
+.address-option span{display:block;font-size:10px;color:#7c857a;overflow-wrap:anywhere;margin-top:2px}
+.address-status{padding:10px 14px;font-size:10px;line-height:1.6;color:#65735f}
+.address-credit{padding:8px 14px;font-size:9px;background:#f6f8f2;color:#7c857a}
+.address-credit a{text-decoration:underline}
+@media(max-width:650px){.address-panel{min-width:0}.address-option{padding:14px}.address-option strong{font-size:13px}}
