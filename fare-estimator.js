@@ -44,6 +44,7 @@
     const feature = (await response.json()).features?.[0];
     if (!feature) throw new Error('Address not found');
     const [lon, lat] = feature.geometry.coordinates;
+    if (input.value.trim() !== query) throw new Error('Address changed');
     input.dataset.lon = lon;
     input.dataset.lat = lat;
     return { lon, lat, label: query };
@@ -174,14 +175,16 @@
 
   function schedulePreview() {
     clearTimeout(previewTimer);
-    const pickup = selectedPoint(document.getElementById('pickup'));
-    const destination = selectedPoint(document.getElementById('destination'));
-    if (!pickup || !destination) {
-      renderPreview('Select both addresses from the suggestions to see your fare.', 'error');
+    const pickupInput = document.getElementById('pickup');
+    const destinationInput = document.getElementById('destination');
+    if (!pickupInput.value.trim() || !destinationInput.value.trim()) {
+      previewVersion++;
+      renderPreview('Enter both addresses to see your fare.', 'error');
       return;
     }
     const version = ++previewVersion;
     renderPreview(null, 'loading');
+    const bothSelected = selectedPoint(pickupInput) && selectedPoint(destinationInput);
     previewTimer = setTimeout(async () => {
       try {
         const estimate = await estimateCurrentTrip();
@@ -189,10 +192,13 @@
       } catch (error) {
         if (version === previewVersion) renderPreview(error.message, 'error');
       }
-    }, 250);
+    }, bothSelected ? 150 : 750);
   }
 
   document.addEventListener('address-selected', schedulePreview);
+  for (const id of ['pickup', 'destination']) {
+    document.getElementById(id).addEventListener('input', schedulePreview);
+  }
   for (const id of ['date', 'time', 'return-date']) document.getElementById(id).addEventListener('change', schedulePreview);
   document.addEventListener('click', event => {
     const trigger = event.target.closest('[data-type], [data-service]');
