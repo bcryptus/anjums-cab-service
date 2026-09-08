@@ -29,7 +29,7 @@
   };
 
   const roundUpHalf = value => Math.ceil(value * 2) / 2;
-  const selectedPoint = input => input.dataset.lat && input.dataset.lon
+  const selectedPoint = input => input.dataset.lat && input.dataset.lon && input.dataset.geocodedValue === input.value.trim()
     ? { lat: Number(input.dataset.lat), lon: Number(input.dataset.lon), label: input.value.trim() }
     : null;
 
@@ -47,6 +47,7 @@
     if (input.value.trim() !== query) throw new Error('Address changed');
     input.dataset.lon = lon;
     input.dataset.lat = lat;
+    input.dataset.geocodedValue = query;
     return { lon, lat, label: query };
   }
 
@@ -197,7 +198,14 @@
 
   document.addEventListener('address-selected', schedulePreview);
   for (const id of ['pickup', 'destination']) {
-    document.getElementById(id).addEventListener('input', schedulePreview);
+    document.getElementById(id).addEventListener('input', event => {
+      if (event.isTrusted) {
+        delete event.currentTarget.dataset.lon;
+        delete event.currentTarget.dataset.lat;
+        delete event.currentTarget.dataset.geocodedValue;
+      }
+      schedulePreview();
+    });
   }
   for (const id of ['date', 'time', 'return-date']) document.getElementById(id).addEventListener('change', schedulePreview);
   document.addEventListener('click', event => {
@@ -210,6 +218,7 @@
         if (/schiphol/i.test(destination.value)) {
           destination.dataset.lon = SCHIPHOL.lon;
           destination.dataset.lat = SCHIPHOL.lat;
+          destination.dataset.geocodedValue = destination.value.trim();
         }
       }
       schedulePreview();
