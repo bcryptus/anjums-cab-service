@@ -3,6 +3,13 @@
 (() => {
   const SCHIPHOL = { lat: 52.3105, lon: 4.7634 };
   const AMSTERDAM_CENTRE = { lat: 52.3676, lon: 4.9041 };
+  const REGIONAL_AIRPORT_MINIMUMS = [
+    { pattern: /rotterdam/i, amount: 85 },
+    { pattern: /utrecht/i, amount: 75 },
+    { pattern: /den haag|the hague/i, amount: 80 },
+    { pattern: /haarlem/i, amount: 40 },
+    { pattern: /almere/i, amount: 75 }
+  ];
   const money = new Intl.NumberFormat('en-NL', { style: 'currency', currency: 'EUR' });
   const routeCache = new Map();
   const preview = document.getElementById('fare-preview');
@@ -68,14 +75,22 @@
     const additions = [];
     if (!when || Number.isNaN(when.getTime())) return additions;
     const leadHours = (when.getTime() - Date.now()) / 3600000;
-    if (leadHours > 0 && leadHours < 24) additions.push({ label: 'Short notice', amount: 7.5 });
+    if (leadHours > 0 && leadHours < 6) additions.push({ label: 'Booked within 6 hours', amount: 10 });
+    else if (leadHours >= 6 && leadHours < 24) additions.push({ label: 'Booked within 24 hours', amount: 5 });
     if (!airport && (when.getHours() >= 23 || when.getHours() < 6)) additions.push({ label: 'Night pickup', amount: 5 });
-    const weekday = when.getDay() > 0 && when.getDay() < 6;
-    const hour = when.getHours() + when.getMinutes() / 60;
-    if (!airport && weekday && ((hour >= 7 && hour < 9.5) || (hour >= 16 && hour < 18.5))) {
-      additions.push({ label: 'Peak traffic allowance', amount: 3 });
-    }
     return additions;
+  }
+
+  function schipholZoneMinimum(routeKm, fromSchiphol) {
+    if (routeKm < 12) return fromSchiphol ? 49 : 39;
+    if (routeKm < 17) return fromSchiphol ? 52.5 : 45;
+    if (routeKm <= 25) return fromSchiphol ? 55 : 50;
+    return 0;
+  }
+
+  function regionalAirportMinimum(from, to) {
+    const labels = `${from.label || ''} ${to.label || ''}`;
+    return REGIONAL_AIRPORT_MINIMUMS.find(item => item.pattern.test(labels))?.amount || 0;
   }
 
   function calculateLeg(from, to, route, when) {
@@ -86,16 +101,18 @@
     if (airport) {
       const distanceCharge = tieredDistanceCharge(route.km, [[20, 1.15], [30, 0.85], [Infinity, 0.60]]);
       raw = 18 + distanceCharge + route.minutes * 0.18;
-      const nearby = route.km < 12;
-      raw = Math.max(raw, fromSchiphol ? (nearby ? 49 : 55) : (nearby ? 39 : 45));
+      raw = Math.max(raw, schipholZoneMinimum(route.km, fromSchiphol), regionalAirportMinimum(from, to));
     } else {
       const distanceCharge = tieredDistanceCharge(route.km, [[10, 2.05], [20, 1.55], [Infinity, 1.15]]);
-      raw = Math.max(18, 4.5 + distanceCharge + route.minutes * 0.34);
+      raw = Math.max(20, 4.5 + distanceCharge + route.minutes * 1.1 * 0.34);
     }
     const additions = timeAllowances(when, airport);
-    const pickupDistanceFromAmsterdam = distanceBetween(from, AMSTERDAM_CENTRE);
-    if (pickupDistanceFromAmsterdam > 15) {
-      additions.push({ label: 'Outside Amsterdam pickup', amount: roundUpHalf((pickupDistanceFromAmsterdam - 15) * 0.75) });
+    const remoteDistanceFromAmsterdam = Math.max(
+      distanceBetween(from, AMSTERDAM_CENTRE),
+      distanceBetween(to, AMSTERDAM_CENTRE)
+    );
+    if (remoteDistanceFromAmsterdam > 15) {
+      additions.push({ label: 'Regional positioning included', amount: roundUpHalf((remoteDistanceFromAmsterdam - 15) * 0.75) });
     }
     const total = roundUpHalf(raw + additions.reduce((sum, item) => sum + item.amount, 0));
     return {
