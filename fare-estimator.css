@@ -8,4 +8,10 @@
 .fare-preview.error{background:#faf6e9;border-color:#ebe1be}
 .fare-breakdown{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .fare-chip{display:inline-block;padding:4px 7px;border-radius:20px;background:#fff9;font-size:9px;color:#5f7057}
-@media(max-width:650px){.fare-preview{align-items:flex-start}.fare-preview-price{font-size:24px}}
+.vehicle-capacity{margin-top:12px;padding:13px 15px;border:1px solid var(--line);border-radius:9px;display:flex;align-items:center;gap:12px;background:#fbfcf8}
+.vehicle-capacity-icon{width:34px;height:34px;border-radius:50%;background:#eaf0e2;color:var(--green);display:grid;place-items:center;flex:0 0 auto}
+.vehicle-capacity-icon svg{width:17px;height:17px}
+.vehicle-capacity strong,.vehicle-capacity span{display:block}
+.vehicle-capacity strong{font:650 11px Manrope,sans-serif;color:var(--green);margin-bottom:3px}
+.vehicle-capacity div>span{font-size:10px;line-height:1.45;color:#74816e}
+@media(max-width:650px){.fare-preview{align-items:flex-start}.fare-preview-price{font-size:24px}.vehicle-capacity{align-items:flex-start}}
