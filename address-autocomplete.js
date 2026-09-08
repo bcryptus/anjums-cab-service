@@ -2,10 +2,10 @@
 (() => {
   const cache = new Map();
   const popular = [
-    { title: 'Amsterdam Schiphol Airport (AMS)', detail: 'Schiphol, Netherlands' },
-    { title: 'Amsterdam Centraal Station', detail: 'Stationsplein, Amsterdam' },
-    { title: 'Dam Square', detail: 'Dam, Amsterdam' },
-    { title: 'RAI Amsterdam', detail: 'Europaplein 24, Amsterdam' }
+    { title: 'Amsterdam Schiphol Airport (AMS)', detail: 'Schiphol, Netherlands', lon: 4.7634, lat: 52.3105 },
+    { title: 'Amsterdam Centraal Station', detail: 'Stationsplein, Amsterdam', lon: 4.9003, lat: 52.3791 },
+    { title: 'Dam Square', detail: 'Dam, Amsterdam', lon: 4.8936, lat: 52.3731 },
+    { title: 'RAI Amsterdam', detail: 'Europaplein 24, Amsterdam', lon: 4.8881, lat: 52.3416 }
   ];
   for (const id of ['pickup', 'destination']) {
     const input = document.getElementById(id);
@@ -72,6 +72,9 @@
       input.value = item.value || `${item.title}, ${item.detail}`;
       input.setCustomValidity('');
       input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dataset.lon = item.lon;
+      input.dataset.lat = item.lat;
+      input.dispatchEvent(new CustomEvent('address-selected', { bubbles: true }));
       close();
       input.focus();
     }
@@ -105,7 +108,8 @@
             const street = [p.street, p.housenumber].filter(Boolean).join(' ');
             const title = p.name || street || p.city || p.locality;
             const detail = [...new Set([p.name && street, p.postcode, p.city || p.town || p.village || p.locality, p.country].filter(Boolean))].join(', ');
-            return { title, detail, value: [...new Set([title, detail].filter(Boolean))].join(', ') };
+            const [lon, lat] = feature.geometry?.coordinates || [];
+            return { title, detail, value: [...new Set([title, detail].filter(Boolean))].join(', '), lon, lat };
           }).filter(item => {
             if (!item.title || seen.has(item.value)) return false;
             seen.add(item.value);
@@ -122,7 +126,13 @@
         }
       }, 400);
     }
-    input.addEventListener('input', search);
+    input.addEventListener('input', event => {
+      if (event.isTrusted) {
+        delete input.dataset.lon;
+        delete input.dataset.lat;
+      }
+      search();
+    });
     input.addEventListener('focus', search);
     input.addEventListener('keydown', event => {
       if (event.key === 'Escape') { event.preventDefault(); close(); return; }
