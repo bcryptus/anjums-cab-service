@@ -74,6 +74,7 @@
       input.dispatchEvent(new Event('input', { bubbles: true }));
       input.dataset.lon = item.lon;
       input.dataset.lat = item.lat;
+      input.dataset.geocodedValue = input.value.trim();
       input.dispatchEvent(new CustomEvent('address-selected', { bubbles: true }));
       close();
       input.focus();
@@ -130,6 +131,7 @@
       if (event.isTrusted) {
         delete input.dataset.lon;
         delete input.dataset.lat;
+        delete input.dataset.geocodedValue;
       }
       search();
     });
